@@ -11,10 +11,11 @@ const askAI = async (req, res) => {
       return res.status(400).json({ message: 'Please provide a question' });
     }
 
-    // Check if OpenAI API key is configured
-    if (!process.env.OPENAI_API_KEY) {
+    // Check if API key is configured
+    const apiKey = process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY;
+    if (!apiKey) {
       return res.status(503).json({
-        message: 'AI Assistant is not configured. Please add OPENAI_API_KEY to your .env file.',
+        message: 'AI Assistant is not configured. Please add GROQ_API_KEY or OPENAI_API_KEY to your .env file.',
         fallback: true,
       });
     }
@@ -43,15 +44,25 @@ const askAI = async (req, res) => {
 WEEKLY REPORTS DATA:
 ${reportContext}`;
 
-    // Call OpenAI API
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Determine LLM provider (Groq or OpenAI)
+    const isGroq = apiKey.startsWith('gsk_') || !!process.env.GROQ_API_KEY;
+    const apiUrl = isGroq 
+      ? 'https://api.groq.com/openai/v1/chat/completions' 
+      : 'https://api.openai.com/v1/chat/completions';
+    
+    const model = isGroq 
+      ? (process.env.GROQ_MODEL || 'llama-3.3-70b-versatile') 
+      : (process.env.OPENAI_MODEL || 'gpt-3.5-turbo');
+
+    // Call API (OpenAI or Groq via OpenAI-compatible endpoint)
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: question },
@@ -64,7 +75,8 @@ ${reportContext}`;
     const data = await response.json();
 
     if (data.error) {
-      return res.status(500).json({ message: `OpenAI Error: ${data.error.message}` });
+      const providerName = isGroq ? 'Groq' : 'OpenAI';
+      return res.status(500).json({ message: `${providerName} Error: ${data.error.message || JSON.stringify(data.error)}` });
     }
 
     res.json({
