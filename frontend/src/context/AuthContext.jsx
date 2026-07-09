@@ -53,6 +53,16 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
+  const updateProfile = async (name, email, password) => {
+    const res = await authAPI.updateProfile({ name, email, password });
+    const { token: newToken, ...userData } = res.data;
+    localStorage.setItem('token', newToken);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setToken(newToken);
+    setUser(userData);
+    return userData;
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -66,6 +76,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     register,
+    updateProfile,
     logout,
     isAuthenticated: !!token && !!user,
     isManager: user?.role === 'manager',

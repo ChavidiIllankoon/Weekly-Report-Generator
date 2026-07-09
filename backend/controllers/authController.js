@@ -101,6 +101,51 @@ const getProfile = async (req, res) => {
   }
 };
 
+// @desc    Update user profile
+// @route   PUT /api/auth/profile
+// @access  Private
+const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const { name, email, password } = req.body;
+
+    // Validate fields if provided
+    if (name) user.name = name;
+
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({ message: 'User already exists with this email' });
+      }
+      user.email = email;
+    }
+
+    if (password) {
+      if (password.length < 6) {
+        return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+      }
+      user.password = password;
+    }
+
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      token: generateToken(updatedUser._id),
+    });
+  } catch (error) {
+    console.error('Update profile error:', error.message);
+    res.status(500).json({ message: 'Server error updating profile' });
+  }
+};
+
 // @desc    Get all users (for manager filtering)
 // @route   GET /api/auth/users
 // @access  Private (manager)
@@ -114,4 +159,4 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getProfile, getAllUsers };
+module.exports = { register, login, getProfile, updateProfile, getAllUsers };
