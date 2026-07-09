@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { reportsAPI, projectsAPI } from '../../services/api';
-import { HiOutlinePlusCircle, HiOutlineTrash, HiOutlinePlus } from 'react-icons/hi';
+import { HiOutlinePlusCircle } from 'react-icons/hi';
+import TaskList from '../../components/TaskList';
 
 const CreateReport = () => {
   const navigate = useNavigate();
@@ -69,42 +70,6 @@ const CreateReport = () => {
       setLoading(false);
     }
   };
-
-  const TaskList = ({ title, items, setter, placeholder }) => (
-    <div>
-      <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-2">{title}</label>
-      <div className="space-y-2">
-        {items.map((item, index) => (
-          <div key={index} className="flex items-center gap-2">
-            <input
-              type="text"
-              value={item}
-              onChange={(e) => updateItem(setter, index, e.target.value)}
-              placeholder={placeholder}
-              className="flex-1 px-3 py-2 bg-gray-50 dark:bg-zinc-900/50 border border-gray-200 dark:border-slate-700/50 rounded-lg text-sm text-gray-800 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/25 transition-all"
-            />
-            {items.length > 1 && (
-              <button
-                type="button"
-                onClick={() => removeItem(setter, index)}
-                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:text-slate-550 dark:hover:text-red-400 dark:hover:bg-red-500/10 rounded-lg transition-all"
-              >
-                <HiOutlineTrash size={16} />
-              </button>
-            )}
-          </div>
-        ))}
-        <button
-          type="button"
-          onClick={() => addItem(setter)}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-all"
-        >
-          <HiOutlinePlus size={14} />
-          Add item
-        </button>
-      </div>
-    </div>
-  );
 
   return (
     <div className="max-w-3xl mx-auto animate-fade-in">
@@ -188,19 +153,25 @@ const CreateReport = () => {
           <TaskList
             title="Completed Tasks"
             items={completedTasks}
-            setter={setCompletedTasks}
+            onUpdate={(index, value) => updateItem(setCompletedTasks, index, value)}
+            onRemove={(index) => removeItem(setCompletedTasks, index)}
+            onAdd={() => addItem(setCompletedTasks)}
             placeholder="What did you complete this week?"
           />
           <TaskList
             title="Planned Tasks (Next Week)"
             items={plannedTasks}
-            setter={setPlannedTasks}
+            onUpdate={(index, value) => updateItem(setPlannedTasks, index, value)}
+            onRemove={(index) => removeItem(setPlannedTasks, index)}
+            onAdd={() => addItem(setPlannedTasks)}
             placeholder="What do you plan to work on?"
           />
           <TaskList
             title="Blockers"
             items={blockers}
-            setter={setBlockers}
+            onUpdate={(index, value) => updateItem(setBlockers, index, value)}
+            onRemove={(index) => removeItem(setBlockers, index)}
+            onAdd={() => addItem(setBlockers)}
             placeholder="Any blockers or issues?"
           />
         </div>

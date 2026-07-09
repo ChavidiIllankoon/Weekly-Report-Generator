@@ -81,7 +81,7 @@ const Login = () => {
                 />
                 <input
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder="Enter your email address"
                   {...register('email', {
                     required: 'Email is required',
                     pattern: {
