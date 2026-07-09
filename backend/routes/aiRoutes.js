@@ -5,7 +5,7 @@ const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
 
 router.use(protect);
-router.use(authorize('manager'));
+router.use(authorize('member', 'manager'));
 
 router.post('/ask', askAI);
 

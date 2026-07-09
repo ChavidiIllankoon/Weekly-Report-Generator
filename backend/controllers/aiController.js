@@ -20,8 +20,11 @@ const askAI = async (req, res) => {
       });
     }
 
-    // Fetch recent submitted reports for context
-    const reports = await Report.find({ status: 'Submitted' })
+    // Fetch recent submitted reports for context based on role
+    const isManager = req.user.role === 'manager';
+    const query = isManager ? { status: 'Submitted' } : { userId: req.user._id };
+
+    const reports = await Report.find(query)
       .populate('userId', 'name email')
       .populate('project', 'name')
       .sort({ createdAt: -1 })
@@ -39,9 +42,14 @@ const askAI = async (req, res) => {
       )
       .join('\n\n');
 
-    const systemPrompt = `You are a project manager assistant. Answer only based on the weekly reports data provided below. Summarize blockers, completed tasks, and identify workload imbalance when asked.
+    const systemPrompt = isManager
+      ? `You are a project manager assistant. Answer only based on the weekly reports data provided below. Summarize blockers, completed tasks, and identify workload imbalance when asked.
 
 WEEKLY REPORTS DATA:
+${reportContext}`
+      : `You are a team member assistant. Answer only based on your weekly reports data provided below. Summarize your completed tasks, future plans, and blockers when asked.
+
+MY WEEKLY REPORTS DATA:
 ${reportContext}`;
 
     // Determine LLM provider (Groq or OpenAI)

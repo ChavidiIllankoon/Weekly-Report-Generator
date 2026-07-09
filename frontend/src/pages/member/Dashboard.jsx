@@ -3,6 +3,7 @@ import { reportsAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { HiOutlineDocumentText, HiOutlineCheckCircle, HiOutlinePencilAlt, HiOutlineClock } from 'react-icons/hi';
 import { TasksTrendChart } from '../../components/Charts';
+import AIChatWidget from '../../components/AIChatWidget';
 
 const MemberDashboard = () => {
   const { user } = useAuth();
@@ -180,6 +181,9 @@ const MemberDashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Floating AI Chat Widget */}
+      <AIChatWidget />
     </div>
   );
 };
